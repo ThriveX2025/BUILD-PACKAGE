@@ -246,33 +246,47 @@ jobs:
 
             cp "$WHEEL_FILE" "$DEB_DIR/opt/opencv_custom_wheel/"
 
-            cat <<EOF > "$DEB_DIR/DEBIAN/control"
-Package: opencv-gstreamer-wheel
-Version: $VERSION
-Section: python
-Priority: optional
-Architecture: amd64
-Depends: libgstreamer1.0-0, libgstreamer-plugins-base1.0-0, gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-ugly, libavcodec-extra, libavformat-dev, libswscale-dev, libv4l-0
-Maintainer: Custom Local Build
-Description: Custom OpenCV Python wheel with GStreamer & FFmpeg support.
- This package enforces the installation of system dependencies required for 
- hardware accelerated GStreamer pipelines in OpenCV. It drops the compiled
- .whl file into /opt/opencv_custom_wheel/ for virtual environment usage.
-EOF
+            python3 -c "
+          import os
 
-            cat <<EOF > "$DEB_DIR/DEBIAN/postinst"
-#!/bin/bash
-echo "=========================================================="
-echo " OpenCV GStreamer system dependencies installed successfully!"
-echo " "
-echo " The custom wheel file has been placed here:"
-echo " /opt/opencv_custom_wheel/$WHEEL_BASENAME"
-echo " "
-echo " To use it in your environment (e.g., MMAction_Env), run:"
-echo " 1. source /path/to/your/venv/bin/activate"
-echo " 2. pip install /opt/opencv_custom_wheel/$WHEEL_BASENAME"
-echo "=========================================================="
-EOF
+          deb_dir = '${DEB_DIR}'
+          version = '${VERSION}'
+          wheel_basename = '${WHEEL_BASENAME}'
+
+          control_lines = [
+              'Package: opencv-gstreamer-wheel',
+              f'Version: {version}',
+              'Section: python',
+              'Priority: optional',
+              'Architecture: amd64',
+              'Depends: libgstreamer1.0-0, libgstreamer-plugins-base1.0-0, gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-ugly, libavcodec-extra, libavformat-dev, libswscale-dev, libv4l-0',
+              'Maintainer: Custom Local Build',
+              'Description: Custom OpenCV Python wheel with GStreamer & FFmpeg support.',
+              ' This package enforces the installation of system dependencies required for',
+              ' hardware accelerated GStreamer pipelines in OpenCV. It drops the compiled',
+              ' .whl file into /opt/opencv_custom_wheel/ for virtual environment usage.',
+          ]
+
+          with open(f'{deb_dir}/DEBIAN/control', 'w') as f:
+              f.write('\n'.join(control_lines) + '\n')
+
+          postinst_lines = [
+              '#!/bin/bash',
+              'echo \"==========================================================\"',
+              'echo \" OpenCV GStreamer system dependencies installed successfully!\"',
+              'echo \" \"',
+              'echo \" The custom wheel file has been placed here:\"',
+              f'echo \" /opt/opencv_custom_wheel/{wheel_basename}\"',
+              'echo \" \"',
+              'echo \" To use it in your environment (e.g., MMAction_Env), run:\"',
+              'echo \" 1. source /path/to/your/venv/bin/activate\"',
+              f'echo \" 2. pip install /opt/opencv_custom_wheel/{wheel_basename}\"',
+              'echo \"==========================================================\"',
+          ]
+
+          with open(f'{deb_dir}/DEBIAN/postinst', 'w') as f:
+              f.write('\n'.join(postinst_lines) + '\n')
+          "
 
             chmod 0755 "$DEB_DIR/DEBIAN/postinst"
             dpkg-deb --build "$DEB_DIR" dist/opencv-python-gstreamer.deb
