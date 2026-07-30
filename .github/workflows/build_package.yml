@@ -266,7 +266,7 @@ jobs:
               'Section: python',
               'Priority: optional',
               'Architecture: amd64',
-              'Depends: libgstreamer1.0-0, libgstreamer-plugins-base1.0-0, gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-ugly, libavcodec-extra, libavformat-dev, libswscale-dev, libv4l-0',
+              'Depends: libgstreamer1.0-0, libgstreamer-plugins-base1.0-0, gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-ugly, libavcodec-extra, libavformat-dev, libswscale-dev, libv4l-0, libtiff-dev | libtiff6 | libtiff5',
               'Maintainer: Custom Local Build',
               'Description: Custom OpenCV Python wheel with GStreamer & FFmpeg support.',
               ' This package enforces the installation of system dependencies required for',

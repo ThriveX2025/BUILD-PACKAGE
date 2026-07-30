@@ -77,12 +77,13 @@ def main():
         jobs = []
         if os.environ.get("LINUX_WHEELS", "true") == "true":
             for py_ver in py_versions:
-                jobs.append({
-                    "os": LINUX_X64,
-                    "torch-version": "2.5.0",
-                    "python-version": py_ver,
-                    "compute-platform": "cpu",
-                })
+                for runner_os in ["ubuntu-24.04", "ubuntu-22.04"]:
+                    jobs.append({
+                        "os": runner_os,
+                        "torch-version": "2.5.0",
+                        "python-version": py_ver,
+                        "compute-platform": "cpu",
+                    })
         if not jobs:
             raise RuntimeError("No jobs to do for opencv-python")
         print(json.dumps({"include": jobs}))
