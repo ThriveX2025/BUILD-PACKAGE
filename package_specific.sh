@@ -78,11 +78,12 @@ fi
 if [[ $REPO == "opencv/opencv-python" ]] || [[ $REPO == "opencv-python" ]]; then
   if [[ $OS == "Linux" ]]; then
     sudo apt-get update
-    sudo apt-get install -y \
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
       build-essential cmake git pkg-config \
       libjpeg-dev libpng-dev libtiff-dev \
       libavcodec-dev libavformat-dev libswscale-dev \
       libv4l-dev libxvidcore-dev libx264-dev \
+      libunwind-dev \
       libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
       gstreamer1.0-tools \
       dpkg-dev
