@@ -11,17 +11,29 @@ def normalize_pep_503(name):
     return re.sub(r"[-_.]+", "-", name).lower()
 
 
-def get_packages_dict(links_wheels):
+def get_packages_dict(links_assets):
     packages = {}
-    for link_wheel in links_wheels:
-        file_name = link_wheel.split("/")[-1]
-        package_and_version = file_name.split(HTML_PLUS)[0]
-        package, _version = package_and_version.rsplit("-", 1)
+    for link_asset in links_assets:
+        file_name = link_asset.split("/")[-1]
+        if file_name.endswith(".whl"):
+            package_and_version = file_name.split(HTML_PLUS)[0]
+            package, _version = package_and_version.rsplit("-", 1)
+        elif file_name.endswith(".deb"):
+            if "opencv-python-gstreamer" in file_name or "opencv-gstreamer" in file_name:
+                package = "opencv-python-gstreamer"
+            elif "_" in file_name:
+                package = file_name.split("_")[0]
+            elif "-" in file_name:
+                package = file_name.rsplit("-", 1)[0].replace(".deb", "")
+            else:
+                package = file_name.replace(".deb", "")
+        else:
+            continue
 
         try:
-            packages[package].append(link_wheel)
+            packages[package].append(link_asset)
         except KeyError:
-            packages[package] = [link_wheel]
+            packages[package] = [link_asset]
 
     return packages
 
@@ -45,16 +57,16 @@ def create_main_index(packages, output_file):
         f.write("</body></html>")
 
 
-def create_package_index(links_wheels, output_file):
+def create_package_index(links_assets, output_file):
     with open(output_file, "w") as f:
         f.write('<!DOCTYPE html><html><head><meta name="pypi:repository-version" content="1.1"></head><body>\n')
 
         file_names = set()
-        for link_wheel in links_wheels:
-            file_name = link_wheel.rsplit("/", 1)[1].replace(HTML_PLUS, "+")
+        for link_asset in links_assets:
+            file_name = link_asset.rsplit("/", 1)[1].replace(HTML_PLUS, "+")
             if file_name not in file_names:
                 file_names.add(file_name)
-                f.write(f'<a href="{link_wheel}">{file_name}</a><br>\n')
+                f.write(f'<a href="{link_asset}">{file_name}</a><br>\n')
 
         f.write("</body></html>")
 
@@ -79,8 +91,8 @@ def main():
     releases = requests.get(f"https://api.github.com/repos/{repository}/releases", headers=headers)
 
     links = get_links(releases)
-    links_wheels = [x for x in links if x.endswith(".whl")]
-    packages_dict = get_packages_dict(links_wheels)
+    links_assets = [x for x in links if x.endswith(".whl") or x.endswith(".deb")]
+    packages_dict = get_packages_dict(links_assets)
 
     output_dir.mkdir()
     create_pep_503_index(packages_dict, output_dir)

@@ -1,12 +1,15 @@
-name: Build Wheels
+name: Build Package
 
 on:
   workflow_dispatch:
     inputs:
       repo:
-        description: "Repository name with owner, as in actions/checkout"
+        description: "Package repository to build"
         required: true
-        type: string
+        type: choice
+        options:
+          - mmcv
+          - opencv-python
       repo-tag:
         description: "Repository tag, as in actions/checkout"
         type: string
@@ -14,9 +17,9 @@ on:
         description: "Relative path to package dir (or empty if root)"
         type: string
       torch-version:
-        description: "Torch versions, separated with a comma"
-        required: true
+        description: "Torch versions, separated with a comma (ignored for opencv-python)"
         type: string
+        default: "2.5.0"
       limit-python:
         description: "Python versions, separated with a comma"
         type: string
@@ -56,6 +59,7 @@ jobs:
       - name: Set job matrix
         id: job-matrix
         env:
+          REPO: ${{ inputs.repo }}
           TORCH_VERSION: ${{ inputs.torch-version }}
           LIMIT_PYTHON: ${{ inputs.limit-python }}
           LIMIT_COMPUTE_PLATFORM: ${{ inputs.limit-compute-platform }}
@@ -111,11 +115,12 @@ jobs:
       - name: Checkout package repository
         uses: actions/checkout@v6
         with:
-          repository: ${{ inputs.repo }}
+          repository: ${{ inputs.repo == 'opencv-python' && 'opencv/opencv-python' || (inputs.repo == 'mmcv' && 'open-mmlab/mmcv' || inputs.repo) }}
           ref: ${{ inputs.repo-tag }}
           submodules: true
 
       - name: Set version suffix in setup.py
+        if: ${{ inputs.repo != 'opencv-python' && inputs.repo != 'opencv/opencv-python' }}
         run: |
           set -eu
 
@@ -155,7 +160,7 @@ jobs:
           path: _builder
 
       - name: Install CUDA
-        if: ${{ matrix.compute-platform != 'cpu' }}
+        if: ${{ matrix.compute-platform != 'cpu' && inputs.repo != 'opencv-python' && inputs.repo != 'opencv/opencv-python' }}
         env:
           CUDA_VERSION: ${{ matrix.compute-platform }}
         run: |
@@ -168,6 +173,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install PyTorch ${{ matrix.torch-version }}+${{ matrix.compute-platform }}
+        if: ${{ inputs.repo != 'opencv-python' && inputs.repo != 'opencv/opencv-python' }}
         run: |
           versionlte() {
             [ "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
@@ -225,11 +231,63 @@ jobs:
           python -m build --wheel --no-isolation --outdir dist $SETUP_PY_DIR
         shell: bash
 
+      - name: Build Debian Package
+        if: ${{ runner.os == 'Linux' && (inputs.repo == 'opencv-python' || inputs.repo == 'opencv/opencv-python') }}
+        run: |
+          set -eu
+          WHEEL_FILE=$(ls dist/*.whl | head -n 1)
+          if [ -n "$WHEEL_FILE" ]; then
+            WHEEL_BASENAME=$(basename "$WHEEL_FILE")
+            VERSION=$(echo "$WHEEL_BASENAME" | cut -d'-' -f2)
+            BUILD_DIR=$(mktemp -d -t opencv_deb_XXXXXX)
+            DEB_DIR="$BUILD_DIR/deb_package"
+            mkdir -p "$DEB_DIR/DEBIAN"
+            mkdir -p "$DEB_DIR/opt/opencv_custom_wheel"
+
+            cp "$WHEEL_FILE" "$DEB_DIR/opt/opencv_custom_wheel/"
+
+            cat <<EOF > "$DEB_DIR/DEBIAN/control"
+Package: opencv-gstreamer-wheel
+Version: $VERSION
+Section: python
+Priority: optional
+Architecture: amd64
+Depends: libgstreamer1.0-0, libgstreamer-plugins-base1.0-0, gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-ugly, libavcodec-extra, libavformat-dev, libswscale-dev, libv4l-0
+Maintainer: Custom Local Build
+Description: Custom OpenCV Python wheel with GStreamer & FFmpeg support.
+ This package enforces the installation of system dependencies required for 
+ hardware accelerated GStreamer pipelines in OpenCV. It drops the compiled
+ .whl file into /opt/opencv_custom_wheel/ for virtual environment usage.
+EOF
+
+            cat <<EOF > "$DEB_DIR/DEBIAN/postinst"
+#!/bin/bash
+echo "=========================================================="
+echo " OpenCV GStreamer system dependencies installed successfully!"
+echo " "
+echo " The custom wheel file has been placed here:"
+echo " /opt/opencv_custom_wheel/$WHEEL_BASENAME"
+echo " "
+echo " To use it in your environment (e.g., MMAction_Env), run:"
+echo " 1. source /path/to/your/venv/bin/activate"
+echo " 2. pip install /opt/opencv_custom_wheel/$WHEEL_BASENAME"
+echo "=========================================================="
+EOF
+
+            chmod 0755 "$DEB_DIR/DEBIAN/postinst"
+            dpkg-deb --build "$DEB_DIR" dist/opencv-python-gstreamer.deb
+            cp dist/opencv-python-gstreamer.deb dist/opencv-python-gstreamer_${VERSION}_amd64.deb || true
+            rm -rf "$BUILD_DIR"
+          fi
+        shell: bash
+
       - uses: actions/upload-artifact@v7
-        name: Upload wheels as artifacts
+        name: Upload package artifacts
         with:
-          name: wheel-${{ matrix.os }}-py${{ matrix.python-version }}-pt${{ matrix.torch-version }}-${{ matrix.compute-platform }}
-          path: dist/*.whl
+          name: package-${{ matrix.os }}-py${{ matrix.python-version }}-pt${{ matrix.torch-version }}-${{ matrix.compute-platform }}
+          path: |
+            dist/*.whl
+            dist/*.deb
           compression-level: 0
           retention-days: 7
           if-no-files-found: error
@@ -269,16 +327,18 @@ jobs:
           echo "Disk space after cleanup:"
           df -h
 
-      - name: Get wheels from artifacts
+      - name: Get artifacts
         uses: actions/download-artifact@v8
         with:
-          pattern: wheel-*
+          pattern: package-*
           merge-multiple: true
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v4
         with:
-          subject-path: "*.whl"
+          subject-path: |
+            *.whl
+            *.deb
 
       - name: Get release name
         id: data
@@ -286,10 +346,14 @@ jobs:
           set -eu
 
           wheels=(*.whl)
-          wheel=${wheels[0]}
-          release_name=${wheel%%+*}
+          if [ ${#wheels[@]} -gt 0 ] && [ -f "${wheels[0]}" ]; then
+            wheel=${wheels[0]}
+            release_name=${wheel%%+*}
+          else
+            release_name="opencv-python-gstreamer"
+          fi
 
-          if [[ "${{ inputs.include-hash }}" == "true" ]]; then
+          if [[ "${{ inputs.include-hash }}" == "true" ]] && [[ "${release_name}" != "opencv-python-gstreamer" ]]; then
             after_plus=${wheel##*+}
             hash=${after_plus:0:7}
             release_name="${release_name}+${hash}"
@@ -300,7 +364,7 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.data.outputs.release_name }}
-          artifacts: "*.whl"
+          artifacts: "*.*"
           allowUpdates: true
 
   make-packages-index:

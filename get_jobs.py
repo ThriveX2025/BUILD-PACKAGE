@@ -52,7 +52,19 @@ def add_os(oses_list: list, os_name: str, os_env_var: str):
 
 
 def main():
-    torch_versions = os.environ["TORCH_VERSION"].split(",")
+    repo_raw = os.environ.get("REPO", "mmcv").strip()
+    repo_map = {
+        "mmcv": "open-mmlab/mmcv",
+        "open-mmlab/mmcv": "open-mmlab/mmcv",
+        "opencv-python": "opencv/opencv-python",
+        "opencv/opencv-python": "opencv/opencv-python",
+    }
+
+    if repo_raw not in repo_map:
+        raise ValueError(f"Invalid repository '{repo_raw}'. Allowed repositories are: 'mmcv', 'opencv-python'")
+
+    repo_name = repo_map[repo_raw]
+
     limit_python = os.environ.get("LIMIT_PYTHON")
     if limit_python:
         limit_python = limit_python.split(",")
@@ -60,6 +72,23 @@ def main():
     if limit_compute_platform:
         limit_compute_platform = limit_compute_platform.split(",")
 
+    if repo_name == "opencv/opencv-python":
+        py_versions = limit_python if limit_python else ["3.10", "3.11", "3.12", "3.13"]
+        jobs = []
+        if os.environ.get("LINUX_WHEELS", "true") == "true":
+            for py_ver in py_versions:
+                jobs.append({
+                    "os": LINUX_X64,
+                    "torch-version": "2.5.0",
+                    "python-version": py_ver,
+                    "compute-platform": "cpu",
+                })
+        if not jobs:
+            raise RuntimeError("No jobs to do for opencv-python")
+        print(json.dumps({"include": jobs}))
+        return
+
+    torch_versions = os.environ.get("TORCH_VERSION", "2.5.0").split(",")
     oses_names = []
     add_os(oses_names, LINUX_X64, "LINUX_WHEELS")
     add_os(oses_names, WINDOWS_X64, "WINDOWS_WHEELS")

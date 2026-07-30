@@ -74,3 +74,23 @@ if [[ $REPO == "Dao-AILab/flash-attention" ]]; then
     echo MAX_JOBS=3 >> "$GITHUB_ENV"
   fi
 fi
+
+if [[ $REPO == "opencv/opencv-python" ]] || [[ $REPO == "opencv-python" ]]; then
+  if [[ $OS == "Linux" ]]; then
+    sudo apt-get update
+    sudo apt-get install -y \
+      build-essential cmake git pkg-config \
+      libjpeg-dev libpng-dev libtiff-dev \
+      libavcodec-dev libavformat-dev libswscale-dev \
+      libv4l-dev libxvidcore-dev libx264-dev \
+      libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+      gstreamer1.0-tools \
+      dpkg-dev
+
+    pip install --upgrade pip setuptools wheel scikit-build cmake ninja numpy packaging
+  fi
+
+  echo "ENABLE_CONTRIB=1" >> "$GITHUB_ENV"
+  echo "ENABLE_HEADLESS=1" >> "$GITHUB_ENV"
+  echo "CMAKE_ARGS=-DWITH_GSTREAMER=ON -DWITH_FFMPEG=ON" >> "$GITHUB_ENV"
+fi
