@@ -228,7 +228,11 @@ jobs:
             SETUP_PY_DIR="${{ inputs.repo-subdir }}"
           fi
 
-          python -m build --wheel --no-isolation --outdir dist $SETUP_PY_DIR
+          if [[ "${{ inputs.repo }}" == "opencv-python" ]] || [[ "${{ inputs.repo }}" == "opencv/opencv-python" ]]; then
+            pip wheel $SETUP_PY_DIR --verbose --no-build-isolation --wheel-dir dist
+          else
+            python -m build --wheel --no-isolation --outdir dist $SETUP_PY_DIR
+          fi
         shell: bash
 
       - name: Build Debian Package
