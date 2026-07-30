@@ -56,32 +56,58 @@ gh workflow run build_package.yml -f repo=mmcv -f torch-version=2.5.0 -f limit-c
 
 ---
 
-## Installation Guide
+## Installation Guide (OpenCV GStreamer & MMCV)
 
-### Option 1: Installation via Pip (Package Index)
+### 1. Installing OpenCV with GStreamer via Debian Package (`.deb`)
 
-Install built wheel packages directly from this repository's PEP 503 package index:
-
-```bash
-pip install --extra-index-url https://thrivex2025.github.io/MMCV-BUILD-WHEEL mmcv
-```
-
-### Option 2: Installing OpenCV GStreamer Debian Package
-
-Download the generated `opencv-python-gstreamer.deb` package from GitHub Releases or the package index, then run:
+#### Step A: Download & Install System Dependencies via `.deb`
+Download `opencv-python-gstreamer.deb` from the **Releases** tab on GitHub, then install it using `apt`:
 
 ```bash
 sudo apt update
 sudo apt install ./opencv-python-gstreamer.deb
 ```
+*This installs system libraries (`libgstreamer1.0-dev`, `libavcodec-extra`, `libtiff-dev`, etc.) and stores the pre-built `.whl` in `/opt/opencv_custom_wheel/`.*
 
-*This automatically installs system dependencies (`libgstreamer1.0-dev`, `gstreamer1.0-plugins-good`, `libavcodec-extra`, etc.) and places the pre-built wheel file under `/opt/opencv_custom_wheel/` for virtual environment use.*
+#### Step B: Install the Wheel into your Python / Virtual Environment
+Activate your virtual environment (`venv` or `uv`) and install the wheel from `/opt/opencv_custom_wheel/`:
+
+**For Standard `pip`:**
+```bash
+source /path/to/your/venv/bin/activate
+pip install /opt/opencv_custom_wheel/*.whl --force-reinstall
+```
+
+**For `uv`:**
+```bash
+source /path/to/your/venv/bin/activate
+uv pip install /opt/opencv_custom_wheel/*.whl --force-reinstall
+```
+
+#### Step C: Verify OpenCV GStreamer Support
+```bash
+python -c "import cv2; print('OpenCV Version:', cv2.__version__); print('GStreamer Support:', 'GStreamer: YES' in cv2.getBuildInformation())"
+```
+
+---
+
+### 2. Installing MMCV / OpenCV directly via Pip Package Index
+
+You can also install built wheels directly from this repository's PEP 503 package index:
+
+```bash
+# Install MMCV
+pip install --extra-index-url https://thrivex2025.github.io/MMCV-BUILD-WHEEL mmcv
+
+# Install OpenCV Contrib Headless
+pip install --extra-index-url https://thrivex2025.github.io/MMCV-BUILD-WHEEL opencv-contrib-python-headless
+```
 
 ---
 
 ## Supported Combinations
 
-- **OS:** Linux (`ubuntu-22.04`), Windows (`windows-2022`)
+- **OS:** Linux (`ubuntu-24.04`, `ubuntu-22.04`), Windows (`windows-2022`)
 - **PyTorch:** `2.3.0` – `2.13.0` (for `mmcv`)
 - **OpenCV:** GStreamer 1.0 & FFmpeg accelerated builds (for `opencv-python`)
 
