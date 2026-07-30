@@ -232,7 +232,7 @@ jobs:
             export ENABLE_CONTRIB=1
             export ENABLE_HEADLESS=1
             export CMAKE_ARGS="-DWITH_GSTREAMER=ON -DWITH_FFMPEG=ON"
-            pip wheel $SETUP_PY_DIR --verbose --no-build-isolation --wheel-dir dist
+            pip wheel $SETUP_PY_DIR --verbose --no-build-isolation --no-deps --wheel-dir dist
           else
             python -m build --wheel --no-isolation --outdir dist $SETUP_PY_DIR
           fi
