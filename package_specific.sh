@@ -88,7 +88,7 @@ if [[ $REPO == "opencv/opencv-python" ]] || [[ $REPO == "opencv-python" ]]; then
       gstreamer1.0-tools \
       dpkg-dev
 
-    pip install --upgrade pip setuptools wheel scikit-build cmake ninja numpy packaging
+    pip install --upgrade pip setuptools wheel build scikit-build cmake ninja numpy packaging
   fi
 
   echo "ENABLE_CONTRIB=1" >> "$GITHUB_ENV"
