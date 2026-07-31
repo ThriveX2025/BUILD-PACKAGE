@@ -4,6 +4,12 @@ set -eu -o pipefail
 
 SCRIPT_DIR=${BASH_SOURCE%/*}
 
+case "$REPO" in
+  "open-mmlab/mmcv"|"mmcv") REPO="open-mmlab/mmcv" ;;
+  "opencv/opencv-python"|"opencv-python") REPO="opencv/opencv-python" ;;
+  "open-mmlab/mmaction2"|"mmaction2") REPO="open-mmlab/mmaction2" ;;
+esac
+
 if [[ $REPO == "facebookresearch/pytorch3d" ]]; then
   if [[ $COMPUTE_PLATFORM == "cu118" ]] && [[ $OS == "Windows" ]]; then
     CUB_VERSION="1.17.2"
