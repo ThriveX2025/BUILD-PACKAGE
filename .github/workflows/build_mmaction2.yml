@@ -7,9 +7,6 @@ on:
         description: "Torch versions, separated with a comma"
         type: string
         default: "2.5.0"
-      limit-python:
-        description: "Python versions, separated with a comma"
-        type: string
       limit-compute-platform:
         description: "PyTorch compute platforms, separated with a comma"
         type: string
@@ -26,7 +23,7 @@ jobs:
       checkout-repo: ${{ github.repository }}
       repo-subdir: "mmaction2"
       torch-version: ${{ inputs.torch-version }}
-      limit-python: ${{ inputs.limit-python }}
+      limit-python: "3.10"
       limit-compute-platform: ${{ inputs.limit-compute-platform }}
       include-hash: ${{ inputs.include-hash }}
       linux-wheels: true

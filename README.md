@@ -42,7 +42,6 @@ The workflow files are located in [`.github/workflows/`](file:///.github/workflo
 
 #### Building `mmaction2`
 - **`torch-version`**: PyTorch version(s) (e.g. `2.5.0` or `2.4.0,2.5.0`)
-- **`limit-python`**: Target Python versions (e.g. `3.12` or `3.10,3.11,3.12`)
 - **`limit-compute-platform`**: Target compute platform (e.g. `cu121`, `cu124`, `cpu`)
 
 ---
