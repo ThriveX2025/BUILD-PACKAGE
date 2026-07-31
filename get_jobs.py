@@ -82,9 +82,7 @@ def main():
                 for runner_os in ["ubuntu-24.04", "ubuntu-22.04"]:
                     jobs.append({
                         "os": runner_os,
-                        "torch-version": "2.5.0",
                         "python-version": py_ver,
-                        "compute-platform": "cpu",
                     })
         if not jobs:
             raise RuntimeError("No jobs to do for opencv-python")
