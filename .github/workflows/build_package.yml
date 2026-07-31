@@ -296,8 +296,7 @@ jobs:
           "
 
             chmod 0755 "$DEB_DIR/DEBIAN/postinst"
-            dpkg-deb --build "$DEB_DIR" dist/opencv-python-gstreamer.deb
-            cp dist/opencv-python-gstreamer.deb dist/opencv-python-gstreamer_${VERSION}_amd64.deb || true
+            dpkg-deb --build "$DEB_DIR" dist/opencv-python-gstreamer_${VERSION}_${{ matrix.os }}_amd64.deb
             rm -rf "$BUILD_DIR"
           fi
         shell: bash
