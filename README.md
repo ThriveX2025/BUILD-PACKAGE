@@ -33,8 +33,6 @@ The workflow files are located in [`.github/workflows/`](file:///.github/workflo
 - **`repo-tag`**: Branch or tag (e.g. `master` or `4.10.0.84`; leave empty for default)
 - **`limit-python`**: Targeted Python versions (e.g. `3.12` or `3.10,3.11,3.12`)
 - **`torch-version`**: *(Ignored for OpenCV)*
-- **`linux-wheels`**: Keep checked (`true`)
-
 #### Building `mmcv` (PyTorch C++/CUDA ops)
 - **`repo`**: Select `mmcv`
 - **`repo-tag`**: Tag (e.g. `v2.2.0`)

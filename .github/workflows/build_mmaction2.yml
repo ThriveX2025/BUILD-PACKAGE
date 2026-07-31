@@ -17,18 +17,6 @@ on:
         description: "Include commit hash in version"
         type: boolean
         default: false
-      linux-wheels:
-        description: "Build Linux wheels"
-        type: boolean
-        default: true
-      windows-wheels:
-        description: "Build Windows wheels"
-        type: boolean
-        default: true
-      macos-wheels:
-        description: "Build MacOS wheels"
-        type: boolean
-        default: true
 
 jobs:
   build:
@@ -41,6 +29,6 @@ jobs:
       limit-python: ${{ inputs.limit-python }}
       limit-compute-platform: ${{ inputs.limit-compute-platform }}
       include-hash: ${{ inputs.include-hash }}
-      linux-wheels: ${{ inputs.linux-wheels }}
-      windows-wheels: ${{ inputs.windows-wheels }}
-      macos-wheels: ${{ inputs.macos-wheels }}
+      linux-wheels: true
+      windows-wheels: false
+      macos-wheels: false
