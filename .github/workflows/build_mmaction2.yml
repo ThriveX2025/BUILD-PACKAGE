@@ -1,0 +1,53 @@
+name: Build mmaction2
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo-tag:
+        description: "Repository tag, as in actions/checkout"
+        type: string
+      repo-subdir:
+        description: "Relative path to package dir (or empty if root)"
+        type: string
+      torch-version:
+        description: "Torch versions, separated with a comma"
+        type: string
+        default: "2.5.0"
+      limit-python:
+        description: "Python versions, separated with a comma"
+        type: string
+      limit-compute-platform:
+        description: "PyTorch compute platforms, separated with a comma"
+        type: string
+      include-hash:
+        description: "Include commit hash in version"
+        type: boolean
+        default: false
+      linux-wheels:
+        description: "Build Linux wheels"
+        type: boolean
+        default: true
+      windows-wheels:
+        description: "Build Windows wheels"
+        type: boolean
+        default: true
+      macos-wheels:
+        description: "Build MacOS wheels"
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/_core_build.yml
+    with:
+      repo: "mmaction2"
+      checkout-repo: "open-mmlab/mmaction2"
+      repo-tag: ${{ inputs.repo-tag }}
+      repo-subdir: ${{ inputs.repo-subdir }}
+      torch-version: ${{ inputs.torch-version }}
+      limit-python: ${{ inputs.limit-python }}
+      limit-compute-platform: ${{ inputs.limit-compute-platform }}
+      include-hash: ${{ inputs.include-hash }}
+      linux-wheels: ${{ inputs.linux-wheels }}
+      windows-wheels: ${{ inputs.windows-wheels }}
+      macos-wheels: ${{ inputs.macos-wheels }}

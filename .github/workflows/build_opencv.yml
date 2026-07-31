@@ -1,0 +1,44 @@
+name: Build opencv-python
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo-tag:
+        description: "Repository tag, as in actions/checkout"
+        type: string
+      repo-subdir:
+        description: "Relative path to package dir (or empty if root)"
+        type: string
+      limit-python:
+        description: "Python versions, separated with a comma"
+        type: string
+      include-hash:
+        description: "Include commit hash in version"
+        type: boolean
+        default: false
+      linux-wheels:
+        description: "Build Linux wheels"
+        type: boolean
+        default: true
+      windows-wheels:
+        description: "Build Windows wheels"
+        type: boolean
+        default: true
+      macos-wheels:
+        description: "Build MacOS wheels"
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/_core_build.yml
+    with:
+      repo: "opencv-python"
+      checkout-repo: "opencv/opencv-python"
+      repo-tag: ${{ inputs.repo-tag }}
+      repo-subdir: ${{ inputs.repo-subdir }}
+      limit-python: ${{ inputs.limit-python }}
+      include-hash: ${{ inputs.include-hash }}
+      linux-wheels: ${{ inputs.linux-wheels }}
+      windows-wheels: ${{ inputs.windows-wheels }}
+      macos-wheels: ${{ inputs.macos-wheels }}

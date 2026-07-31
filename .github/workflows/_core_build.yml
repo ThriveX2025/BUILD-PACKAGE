@@ -1,46 +1,44 @@
-name: Build Package
+name: Core Build Workflow
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       repo:
-        description: "Package repository to build"
         required: true
-        type: choice
-        options:
-          - mmcv
-          - opencv-python
-          - mmaction2
+        type: string
+      checkout-repo:
+        required: true
+        type: string
       repo-tag:
-        description: "Repository tag, as in actions/checkout"
+        required: false
         type: string
       repo-subdir:
-        description: "Relative path to package dir (or empty if root)"
+        required: false
         type: string
       torch-version:
-        description: "Torch versions, separated with a comma (ignored for opencv-python)"
+        required: false
         type: string
         default: "2.5.0"
       limit-python:
-        description: "Python versions, separated with a comma"
+        required: false
         type: string
       limit-compute-platform:
-        description: "PyTorch compute platforms, separated with a comma"
+        required: false
         type: string
       include-hash:
-        description: "Include commit hash in version"
+        required: false
         type: boolean
         default: false
       linux-wheels:
-        description: "Build Linux wheels"
+        required: false
         type: boolean
         default: true
       windows-wheels:
-        description: "Build Windows wheels"
+        required: false
         type: boolean
         default: true
       macos-wheels:
-        description: "Build MacOS wheels"
+        required: false
         type: boolean
         default: true
 
@@ -116,7 +114,7 @@ jobs:
       - name: Checkout package repository
         uses: actions/checkout@v6
         with:
-          repository: ${{ inputs.repo == 'opencv-python' && 'opencv/opencv-python' || (inputs.repo == 'mmcv' && 'open-mmlab/mmcv' || (inputs.repo == 'mmaction2' && 'open-mmlab/mmaction2' || inputs.repo)) }}
+          repository: ${{ inputs.checkout-repo }}
           ref: ${{ inputs.repo-tag }}
           submodules: true
 
