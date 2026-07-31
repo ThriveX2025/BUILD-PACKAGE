@@ -58,10 +58,12 @@ def main():
         "open-mmlab/mmcv": "open-mmlab/mmcv",
         "opencv-python": "opencv/opencv-python",
         "opencv/opencv-python": "opencv/opencv-python",
+        "mmaction2": "open-mmlab/mmaction2",
+        "open-mmlab/mmaction2": "open-mmlab/mmaction2",
     }
 
     if repo_raw not in repo_map:
-        raise ValueError(f"Invalid repository '{repo_raw}'. Allowed repositories are: 'mmcv', 'opencv-python'")
+        raise ValueError(f"Invalid repository '{repo_raw}'. Allowed repositories are: 'mmcv', 'opencv-python', 'mmaction2'")
 
     repo_name = repo_map[repo_raw]
 

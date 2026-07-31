@@ -10,6 +10,7 @@ on:
         options:
           - mmcv
           - opencv-python
+          - mmaction2
       repo-tag:
         description: "Repository tag, as in actions/checkout"
         type: string
@@ -115,7 +116,7 @@ jobs:
       - name: Checkout package repository
         uses: actions/checkout@v6
         with:
-          repository: ${{ inputs.repo == 'opencv-python' && 'opencv/opencv-python' || (inputs.repo == 'mmcv' && 'open-mmlab/mmcv' || inputs.repo) }}
+          repository: ${{ inputs.repo == 'opencv-python' && 'opencv/opencv-python' || (inputs.repo == 'mmcv' && 'open-mmlab/mmcv' || (inputs.repo == 'mmaction2' && 'open-mmlab/mmaction2' || inputs.repo)) }}
           ref: ${{ inputs.repo-tag }}
           submodules: true
 
