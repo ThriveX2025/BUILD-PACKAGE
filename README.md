@@ -100,7 +100,7 @@ uv pip install /opt/opencv_custom_wheel/*.whl --force-reinstall
 
 **Verify OpenCV GStreamer Support:**
 ```bash
-python -c "import cv2; print('OpenCV Version:', cv2.__version__); print('GStreamer Support:', 'GStreamer: YES' in cv2.getBuildInformation())"
+python3 -c "import cv2, re; print('OpenCV Version:', cv2.__version__); print('GStreamer Support:', bool(re.search(r'GStreamer:\s*YES', cv2.getBuildInformation())))"
 ```
 
 #### Option B: Install via Pip Package Index
