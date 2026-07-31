@@ -3,12 +3,6 @@ name: Build mmaction2
 on:
   workflow_dispatch:
     inputs:
-      repo-tag:
-        description: "Repository tag, as in actions/checkout"
-        type: string
-      repo-subdir:
-        description: "Relative path to package dir (or empty if root)"
-        type: string
       torch-version:
         description: "Torch versions, separated with a comma"
         type: string
@@ -41,9 +35,8 @@ jobs:
     uses: ./.github/workflows/_core_build.yml
     with:
       repo: "mmaction2"
-      checkout-repo: "open-mmlab/mmaction2"
-      repo-tag: ${{ inputs.repo-tag }}
-      repo-subdir: ${{ inputs.repo-subdir }}
+      checkout-repo: ${{ github.repository }}
+      repo-subdir: "mmaction2"
       torch-version: ${{ inputs.torch-version }}
       limit-python: ${{ inputs.limit-python }}
       limit-compute-platform: ${{ inputs.limit-compute-platform }}
