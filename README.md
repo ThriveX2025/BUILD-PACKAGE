@@ -4,8 +4,8 @@ This repository serves as a comprehensive toolset for building and indexing `mmc
 
 ## Key Features
 
-1. **Package Builder Workflow (`build_package.yml`):**
-   - Automates building PyTorch & OpenCV packages (`mmcv` and `opencv-python`).
+1. **Package Builder Workflows:**
+   - Automates building PyTorch & OpenCV packages (`mmcv`, `mmaction2`, and `opencv-python`).
    - For `opencv-python`, builds custom OpenCV wheels with GStreamer (`-DWITH_GSTREAMER=ON`) and FFmpeg (`-DWITH_FFMPEG=ON`) support on Linux, and packages the output into OS-specific Debian packages (e.g. `opencv-python-gstreamer_<version>_ubuntu-24.04_amd64.deb`).
    - Custom build patches for Linux and Windows are stored under [`mmc-patch-for-linux-and-windows/`](file:///mnt/d/PROJECTS/WHEEL-BUILDER/mmc-patch-for-linux-and-windows).
    - Uses build attestation to establish provenance for wheels and packages.
@@ -19,13 +19,13 @@ This repository serves as a comprehensive toolset for building and indexing `mmc
 
 ## How to Trigger the GitHub Action Workflow
 
-The workflow file is located at [`.github/workflows/build_package.yml`](file:///.github/workflows/build_package.yml).
+The workflow files are located in [`.github/workflows/`](file:///.github/workflows/).
 
 ### Method A: Via GitHub Web Interface
 
 1. Go to your repository on GitHub (**`ThriveX2025/MMCV-BUILD-WHEEL`**).
 2. Click the **Actions** tab.
-3. Select **Build Package** from the left sidebar.
+3. Select the workflow for your target package from the left sidebar (e.g., **Build mmcv**, **Build mmaction2**, **Build opencv-python**).
 4. Click **Run workflow** on the top right.
 
 #### Building `opencv-python` (OpenCV with GStreamer)
@@ -42,16 +42,24 @@ The workflow file is located at [`.github/workflows/build_package.yml`](file:///
 - **`limit-python`**: Target Python versions (e.g. `3.12` or `3.10,3.11,3.12`)
 - **`limit-compute-platform`**: Target compute platform (e.g. `cu121`, `cu124`, `cpu`)
 
+#### Building `mmaction2`
+- **`torch-version`**: PyTorch version(s) (e.g. `2.5.0` or `2.4.0,2.5.0`)
+- **`limit-python`**: Target Python versions (e.g. `3.12` or `3.10,3.11,3.12`)
+- **`limit-compute-platform`**: Target compute platform (e.g. `cu121`, `cu124`, `cpu`)
+
 ---
 
 ### Method B: Via GitHub CLI (`gh`)
 
 ```bash
 # Trigger OpenCV with GStreamer build for Python 3.12
-gh workflow run build_package.yml -f repo=opencv-python -f limit-python=3.12
+gh workflow run build_opencv.yml -f limit-python=3.12
 
 # Trigger MMCV build for PyTorch 2.5.0 and CUDA 12.1
-gh workflow run build_package.yml -f repo=mmcv -f torch-version=2.5.0 -f limit-compute-platform=cu121
+gh workflow run build_mmcv.yml -f torch-version=2.5.0 -f limit-compute-platform=cu121
+
+# Trigger MMAction2 build for PyTorch 2.5.0 and CUDA 12.1
+gh workflow run build_mmaction2.yml -f torch-version=2.5.0 -f limit-compute-platform=cu121
 ```
 
 ---
@@ -68,7 +76,17 @@ pip install --extra-index-url https://thrivex2025.github.io/MMCV-BUILD-WHEEL mmc
 
 ---
 
-### 2. OpenCV Python (with GStreamer & FFmpeg)
+### 2. MMAction2
+
+You can install built `mmaction2` wheels directly from this repository's PEP 503 package index:
+
+```bash
+pip install --extra-index-url https://thrivex2025.github.io/MMCV-BUILD-WHEEL mmaction2
+```
+
+---
+
+### 3. OpenCV Python (with GStreamer & FFmpeg)
 
 #### Option A: Install via Debian Package (`.deb`) - Recommended for Linux
 Download the `.deb` package matching your OS release (e.g. `opencv-python-gstreamer_*_ubuntu-24.04_amd64.deb` for Ubuntu 24.04 or `opencv-python-gstreamer_*_ubuntu-22.04_amd64.deb` for Ubuntu 22.04) from the **Releases** tab on GitHub, then install it using `apt`:
